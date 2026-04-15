@@ -1,0 +1,48 @@
+{
+    "name": "loklify/laravel",
+    "description": "Laravel package for Loklify translations",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Romain Vrebos",
+            "email": "r.vrebos@mending.fr"
+        },
+        {
+            "name": "Maxime Vaugoyeau",
+            "email": "m.vaugoyeau@mending.fr"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0|^12.0|^13.0",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Loklify\\Laravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Loklify\\Laravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Loklify\\Laravel\\LoklifyServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
