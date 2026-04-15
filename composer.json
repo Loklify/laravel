@@ -3,6 +3,7 @@
     "description": "Laravel package for Loklify translations",
     "type": "library",
     "license": "MIT",
+    "version": "0.0.1",
     "authors": [
         {
             "name": "Romain Vrebos",
