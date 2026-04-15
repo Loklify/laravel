@@ -3,13 +3,17 @@
 namespace Loklify\Laravel;
 
 use Illuminate\Contracts\Translation\Loader;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
-class LoklifyLoader implements Loader
+readonly class LoklifyLoader implements Loader
 {
-    public function __construct(private readonly Loader $fileLoader) {}
+    public function __construct(private Loader $fileLoader) {}
 
+    /**
+     * @throws ConnectionException
+     */
     public function load($locale, $group, $namespace = null): array
     {
         if ($group === '*' && $namespace === '*') {
@@ -21,6 +25,7 @@ class LoklifyLoader implements Loader
 
     /**
      * @return array<string, string>
+     * @throws ConnectionException
      */
     private function loadFromLoklify(string $locale): array
     {
