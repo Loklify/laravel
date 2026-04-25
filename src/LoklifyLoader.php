@@ -30,16 +30,45 @@ readonly class LoklifyLoader implements Loader
     private function loadFromLoklify(string $locale): array
     {
         $ttl = (int) config('loklify.cache_ttl', 3600);
+        $translationsKey = "loklify.translations.{$locale}";
+        $freshnessKey = "loklify.fresh.{$locale}";
+        $etagKey = "loklify.etag.{$locale}";
 
-        $fetch = fn (): array => Http::withToken(config('loklify.token'))
-            ->get(rtrim((string) config('loklify.url'), '/').'/api/projects/'.config('loklify.project_id')."/translations/{$locale}")
-            ->json() ?? [];
-
-        if ($ttl === 0) {
-            return $fetch();
+        if ($ttl > 0 && Cache::has($freshnessKey)) {
+            return Cache::get($translationsKey, []);
         }
 
-        return Cache::remember("loklify.translations.{$locale}", $ttl, $fetch);
+        $etag = $ttl > 0 ? Cache::get($etagKey) : null;
+
+        $response = Http::withToken(config('loklify.token'))
+            ->when($etag, fn ($http) => $http->withHeaders(['If-None-Match' => $etag]))
+            ->get(rtrim((string) config('loklify.url'), '/').'/api/projects/'.config('loklify.project_id')."/translations/{$locale}");
+
+        if ($response->status() === 304) {
+            if ($ttl > 0) {
+                Cache::put($freshnessKey, true, $ttl);
+            }
+
+            return Cache::get($translationsKey, []);
+        }
+
+        $translations = $response->json() ?? [];
+
+        if (empty($translations)) {
+            return [];
+        }
+
+        if ($ttl > 0) {
+            Cache::forever($translationsKey, $translations);
+            Cache::put($freshnessKey, true, $ttl);
+
+            $responseEtag = $response->header('ETag');
+            if ($responseEtag) {
+                Cache::forever($etagKey, $responseEtag);
+            }
+        }
+
+        return $translations;
     }
 
     public function addNamespace($namespace, $hint): void
